@@ -1,5 +1,5 @@
 class Instalacion:
-    def __init__(self, id_instalacion: int, fecha: str, direccion: str, estado: str, observaciones: str, id_pedido: int):
+    def __init__(self, id_instalacion: int, fecha: str, direccion: str, estado: str, observaciones: str, id_pedido: str | None = None):
         self.id_instalacion = id_instalacion
         self.fecha = fecha
         self.direccion = direccion

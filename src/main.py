@@ -1,9 +1,13 @@
 from datetime import date
 from pathlib import Path
 
+from crud.cliente_crud import ClienteCRUD
 from crud.compra_crud import CompraCRUD
 from crud.database import Database
+from crud.detalle_pedido_crud import DetallePedidoCRUD
 from crud.material_crud import MaterialCRUD
+from crud.pedido_crud import PedidoCRUD
+from crud.producto_crud import ProductoCRUD
 from crud.proveedor_crud import ProveedorCRUD
 
 
@@ -52,6 +56,15 @@ def pedir_id(acciones):
     if not filas:
         return None
     return input("ID del registro: ").strip()
+
+
+def elegir(acciones, mensaje):
+    filas = acciones.listar()
+    mostrar(acciones.columns, filas)
+    if not filas:
+        print("No hay registros para elegir. Crea uno primero.")
+        return None
+    return input(f"{mensaje}: ").strip()
 
 
 def menu_materiales(acciones):
@@ -144,20 +157,146 @@ def menu_compras(acciones):
             print(f"No se pudo completar la acción: {error}")
 
 
+def menu_clientes(acciones):
+    while True:
+        print("\n--- CLIENTES ---")
+        print("1. Listar\n2. Crear\n3. Actualizar\n4. Eliminar\n0. Volver")
+        opcion = input("Opción: ").strip()
+        try:
+            if opcion == "1":
+                mostrar(acciones.columns, acciones.listar())
+            elif opcion == "2":
+                identifier = acciones.crear(obligatorio("Nombre"), obligatorio("Documento"), obligatorio("Teléfono"), obligatorio("Correo"), obligatorio("Dirección"))
+                print(f"Cliente creado: {identifier}")
+            elif opcion == "3":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    actual = acciones.obtener(identifier)
+                    acciones.actualizar(identifier, obligatorio("Nombre", actual[0]), obligatorio("Documento", actual[1]), obligatorio("Teléfono", actual[2]), obligatorio("Correo", actual[3]), obligatorio("Dirección", actual[4]))
+                    print("Cliente actualizado.")
+            elif opcion == "4":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    acciones.eliminar(identifier)
+                    print("Cliente eliminado.")
+            elif opcion == "0":
+                return
+            else:
+                print("Opción no válida.")
+        except (IndexError, ValueError) as error:
+            print(f"No se pudo completar la acción: {error}")
+
+
+def menu_productos(acciones):
+    while True:
+        print("\n--- PRODUCTOS ---")
+        print("1. Listar\n2. Crear\n3. Actualizar\n4. Eliminar\n0. Volver")
+        opcion = input("Opción: ").strip()
+        try:
+            if opcion == "1":
+                mostrar(acciones.columns, acciones.listar())
+            elif opcion == "2":
+                identifier = acciones.crear(obligatorio("Nombre"), obligatorio("Descripción"), obligatorio("Categoría"), decimal("Precio"))
+                print(f"Producto creado: {identifier}")
+            elif opcion == "3":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    actual = acciones.obtener(identifier)
+                    acciones.actualizar(identifier, obligatorio("Nombre", actual[0]), obligatorio("Descripción", actual[1]), obligatorio("Categoría", actual[2]), decimal("Precio", actual[3]))
+                    print("Producto actualizado.")
+            elif opcion == "4":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    acciones.eliminar(identifier)
+                    print("Producto eliminado.")
+            elif opcion == "0":
+                return
+            else:
+                print("Opción no válida.")
+        except (IndexError, ValueError) as error:
+            print(f"No se pudo completar la acción: {error}")
+
+
+def menu_pedidos(acciones, clientes, productos, detalles):
+    while True:
+        print("\n--- PEDIDOS ---")
+        print("1. Listar\n2. Crear\n3. Actualizar\n4. Eliminar")
+        print("5. Ver ítems de un pedido\n6. Agregar ítem a un pedido\n7. Quitar ítem de un pedido\n0. Volver")
+        opcion = input("Opción: ").strip()
+        try:
+            if opcion == "1":
+                mostrar(acciones.columns, acciones.listar())
+            elif opcion == "2":
+                id_cliente = elegir(clientes, "ID del cliente")
+                if id_cliente:
+                    print(f"Estados: {', '.join(acciones.ESTADOS)}")
+                    identifier = acciones.crear(id_cliente, obligatorio("Fecha", date.today().isoformat()), obligatorio("Fecha de entrega"), obligatorio("Estado", "Pendiente"), obligatorio("Dirección de entrega"))
+                    print(f"Pedido creado: {identifier}. Agrega sus ítems con la opción 6.")
+            elif opcion == "3":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    actual = acciones.obtener(identifier)
+                    print(f"Estados: {', '.join(acciones.ESTADOS)}")
+                    acciones.actualizar(identifier, obligatorio("ID del cliente", actual[0]), obligatorio("Fecha", actual[1]), obligatorio("Fecha de entrega", actual[2]), obligatorio("Estado", actual[3]), obligatorio("Dirección de entrega", actual[4]))
+                    print("Pedido actualizado.")
+            elif opcion == "4":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    acciones.eliminar(identifier)
+                    print("Pedido eliminado junto con sus ítems.")
+            elif opcion == "5":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    mostrar(detalles.columns, detalles.listar_por_pedido(identifier))
+            elif opcion == "6":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    id_producto = elegir(productos, "ID del producto")
+                    if id_producto:
+                        detalles.crear(identifier, id_producto, decimal("Cantidad"))
+                        print(f"Ítem agregado. Nuevo total del pedido: {acciones.obtener(identifier)[5]}")
+            elif opcion == "7":
+                identifier = pedir_id(acciones)
+                if identifier:
+                    filas = detalles.listar_por_pedido(identifier)
+                    mostrar(detalles.columns, filas)
+                    if filas:
+                        detalles.eliminar(input("ID del ítem: ").strip())
+                        print(f"Ítem eliminado. Nuevo total del pedido: {acciones.obtener(identifier)[5]}")
+            elif opcion == "0":
+                return
+            else:
+                print("Opción no válida.")
+        except (IndexError, ValueError) as error:
+            print(f"No se pudo completar la acción: {error}")
+
+
 def main():
     database = Database(DATABASE)
-    acciones = (MaterialCRUD(database), ProveedorCRUD(database), CompraCRUD(database))
+    materiales = MaterialCRUD(database)
+    proveedores = ProveedorCRUD(database)
+    compras = CompraCRUD(database)
+    clientes = ClienteCRUD(database)
+    productos = ProductoCRUD(database)
+    pedidos = PedidoCRUD(database)
+    detalles = DetallePedidoCRUD(database, pedidos)
     try:
         while True:
             print("\n=== E-BALOGIST ===")
-            print("1. Materiales\n2. Proveedores\n3. Compras\n0. Salir")
+            print("1. Materiales\n2. Proveedores\n3. Compras\n4. Clientes\n5. Productos\n6. Pedidos\n0. Salir")
             opcion = input("Opción: ").strip()
             if opcion == "1":
-                menu_materiales(acciones[0])
+                menu_materiales(materiales)
             elif opcion == "2":
-                menu_proveedores(acciones[1])
+                menu_proveedores(proveedores)
             elif opcion == "3":
-                menu_compras(acciones[2])
+                menu_compras(compras)
+            elif opcion == "4":
+                menu_clientes(clientes)
+            elif opcion == "5":
+                menu_productos(productos)
+            elif opcion == "6":
+                menu_pedidos(pedidos, clientes, productos, detalles)
             elif opcion == "0":
                 print("Programa finalizado.")
                 return
