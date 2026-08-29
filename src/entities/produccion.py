@@ -1,5 +1,5 @@
 class Produccion:
-    def __init__(self, id_produccion: int, fecha_inicio: str, fecha_final: str, estado: str, tipo_trabajo: str, id_pedido: int):
+    def __init__(self, id_produccion: int, fecha_inicio: str, fecha_final: str, estado: str, tipo_trabajo: str, id_pedido: str | None = None):
         self.id_produccion = id_produccion
         self.fecha_inicio = fecha_inicio
         self.fecha_final = fecha_final
