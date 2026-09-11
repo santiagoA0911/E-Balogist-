@@ -1,10 +1,13 @@
-class Empleado:
-    def __init__(self, id_empleado: int, nombre: str, telefono: str, cargo: str, estado: str):
-        self.id_empleado = id_empleado
-        self.nombre = nombre
-        self.telefono = telefono
-        self.cargo = cargo
-        self.estado = estado
+from sqlalchemy import Column, Integer, String
+from src.database.connection import AuditModel
 
-    def __str__(self):
-        return f"Empleado(ID: {self.id_empleado}, Nombre: {self.nombre}, Cargo: {self.cargo})"
+class Empleado(AuditModel):
+    __tablename__ = "empleados"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    nombre = Column(String(100), nullable=False)
+    cargo = Column(String(100), nullable=False)
+    estado = Column(String(50), default="Activo")
+
+    def __repr__(self):
+        return f"Empleado(ID: {self.id}, Nombre: {self.nombre}, Cargo: {self.cargo}, Estado: {self.estado})"

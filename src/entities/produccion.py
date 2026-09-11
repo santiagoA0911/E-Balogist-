@@ -1,11 +1,16 @@
-class Produccion:
-    def __init__(self, id_produccion: int, fecha_inicio: str, fecha_final: str, estado: str, tipo_trabajo: str, id_pedido: str | None = None):
-        self.id_produccion = id_produccion
-        self.fecha_inicio = fecha_inicio
-        self.fecha_final = fecha_final
-        self.estado = estado
-        self.tipo_trabajo = tipo_trabajo
-        self.id_pedido = id_pedido
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+from src.database.connection import AuditModel
 
-    def __str__(self):
-        return f"Produccion(ID: {self.id_produccion}, Trabajo: {self.tipo_trabajo}, Estado: {self.estado})"
+class Produccion(AuditModel):
+    __tablename__ = "producciones"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    trabajo = Column(String(150), nullable=False)
+    estado = Column(String(50), default="Pendiente")
+    empleado_id = Column(Integer, ForeignKey("empleados.id"), nullable=True)
+
+    empleado = relationship("Empleado")
+
+    def __repr__(self):
+        return f"Produccion(ID: {self.id}, Trabajo: {self.trabajo}, Estado: {self.estado})"
