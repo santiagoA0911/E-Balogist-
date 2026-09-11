@@ -1,17 +1,33 @@
 from datetime import date
 from pathlib import Path
 
-from crud.cliente_crud import ClienteCRUD
-from crud.compra_crud import CompraCRUD
-from crud.database import Database
-from crud.detalle_pedido_crud import DetallePedidoCRUD
-from crud.material_crud import MaterialCRUD
-from crud.pedido_crud import PedidoCRUD
-from crud.producto_crud import ProductoCRUD
-from crud.proveedor_crud import ProveedorCRUD
+from sqlalchemy.exc import SQLAlchemyError
+
+from src.crud.cliente_crud import ClienteCRUD
+from src.crud.compra_crud import CompraCRUD
+from src.crud.database import Database
+from src.crud.detalle_pedido_crud import DetallePedidoCRUD
+from src.crud.material_crud import MaterialCRUD
+from src.crud.pedido_crud import PedidoCRUD
+from src.crud.producto_crud import ProductoCRUD
+from src.crud.proveedor_crud import ProveedorCRUD
+from src.database.connection import Base, engine
 
 
 DATABASE = Path(__file__).with_name("ebalogist.db")
+
+
+def preparar_neon():
+    """Crea en PostgreSQL las tablas de las entidades migradas al ORM, si faltan."""
+    try:
+        Base.metadata.create_all(bind=engine)
+    except SQLAlchemyError as error:
+        raise SystemExit(
+            "\nNo se pudo conectar con la base de datos de PostgreSQL.\n"
+            f"Detalle: {error}\n\n"
+            "Revisa que exista un archivo .env en la raiz del repositorio con la\n"
+            "variable DATABASE_URL. Puedes guiarte con .env.example."
+        ) from error
 
 
 def obligatorio(mensaje, actual=None):
@@ -272,14 +288,19 @@ def menu_pedidos(acciones, clientes, productos, detalles):
 
 
 def main():
+    preparar_neon()
+
+    # Materiales, proveedores y compras siguen en SQLite (primer parcial).
     database = Database(DATABASE)
     materiales = MaterialCRUD(database)
     proveedores = ProveedorCRUD(database)
     compras = CompraCRUD(database)
-    clientes = ClienteCRUD(database)
-    productos = ProductoCRUD(database)
-    pedidos = PedidoCRUD(database)
-    detalles = DetallePedidoCRUD(database, pedidos)
+
+    # Clientes, productos, pedidos y detalles ya viven en PostgreSQL vía ORM.
+    clientes = ClienteCRUD()
+    productos = ProductoCRUD()
+    pedidos = PedidoCRUD()
+    detalles = DetallePedidoCRUD()
     try:
         while True:
             print("\n=== E-BALOGIST ===")
