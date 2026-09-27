@@ -26,9 +26,10 @@ class DetallePedidoCRUD:
             filas = sesion.execute(
                 select(
                     DetallePedido.id,
-                    Producto.nombre,
+                    DetallePedido.producto_id,
                     DetallePedido.cantidad,
                     DetallePedido.precio_unitario,
+                    
                     (DetallePedido.cantidad * DetallePedido.precio_unitario).label("subtotal"),
                 )
                 .join(Producto, Producto.id == DetallePedido.producto_id)
