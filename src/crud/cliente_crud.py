@@ -1,44 +1,103 @@
-import sqlite3
-from uuid import uuid4
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
+
+from src.database.connection import SessionLocal
+# Se importan las cuatro entidades aunque no todas se usen aqui: SQLAlchemy
+# necesita tenerlas registradas para resolver los relationship() entre ellas.
+from src.entities.cliente import Cliente
+from src.entities.detalle_pedido import DetallePedido
+from src.entities.pedido import Pedido
+from src.entities.producto import Producto
 
 
 class ClienteCRUD:
-    columns = ("id_cliente", "nombre", "documento", "telefono", "correo", "direccion")
+    """CRUD de clientes sobre SQLAlchemy. Cada metodo abre y cierra su propia sesion."""
 
-    def __init__(self, database):
-        self.database = database
+    columns = ("id", "nombre", "documento", "telefono", "correo", "direccion")
+
+    def __init__(self, session_factory=SessionLocal):
+        self.session_factory = session_factory
 
     def listar(self):
-        return self.database.rows("SELECT id_cliente, nombre, documento, telefono, correo, direccion FROM clientes")
+        with self.session_factory() as sesion:
+            filas = sesion.execute(
+                select(
+                    Cliente.id,
+                    Cliente.nombre,
+                    Cliente.documento,
+                    Cliente.telefono,
+                    Cliente.correo,
+                    Cliente.direccion,
+                ).order_by(Cliente.id)
+            ).all()
+        return [tuple(fila) for fila in filas]
 
-    def obtener(self, id_cliente):
-        return self.database.rows(
-            "SELECT nombre, documento, telefono, correo, direccion FROM clientes WHERE id_cliente = ?",
-            (id_cliente,),
-        )[0]
+    def obtener(self, identificador):
+        id_cliente = self._convertir_id(identificador)
+        with self.session_factory() as sesion:
+            cliente = self._buscar(sesion, id_cliente)
+            return (
+                cliente.nombre,
+                cliente.documento,
+                cliente.telefono,
+                cliente.correo,
+                cliente.direccion,
+            )
 
     def crear(self, nombre, documento, telefono, correo, direccion):
-        id_cliente = str(uuid4())
-        try:
-            self.database.run(
-                "INSERT INTO clientes VALUES (?, ?, ?, ?, ?, ?)",
-                (id_cliente, nombre, documento, telefono, correo, direccion),
-            )
-        except sqlite3.IntegrityError as error:
-            raise ValueError("Ya existe un cliente con ese documento.") from error
-        return id_cliente
+        cliente = Cliente(
+            nombre=nombre,
+            documento=documento,
+            telefono=telefono,
+            correo=correo,
+            direccion=direccion,
+        )
+        with self.session_factory() as sesion:
+            sesion.add(cliente)
+            try:
+                sesion.commit()
+            except IntegrityError as error:
+                sesion.rollback()
+                raise ValueError("Ya existe un cliente con ese documento.") from error
+            return cliente.id
 
-    def actualizar(self, id_cliente, nombre, documento, telefono, correo, direccion):
-        try:
-            self.database.run(
-                "UPDATE clientes SET nombre=?, documento=?, telefono=?, correo=?, direccion=? WHERE id_cliente=?",
-                (nombre, documento, telefono, correo, direccion, id_cliente),
-            )
-        except sqlite3.IntegrityError as error:
-            raise ValueError("Ya existe un cliente con ese documento.") from error
+    def actualizar(self, identificador, nombre, documento, telefono, correo, direccion):
+        id_cliente = self._convertir_id(identificador)
+        with self.session_factory() as sesion:
+            cliente = self._buscar(sesion, id_cliente)
+            cliente.nombre = nombre
+            cliente.documento = documento
+            cliente.telefono = telefono
+            cliente.correo = correo
+            cliente.direccion = direccion
+            try:
+                sesion.commit()
+            except IntegrityError as error:
+                sesion.rollback()
+                raise ValueError("Ya existe un cliente con ese documento.") from error
 
-    def eliminar(self, id_cliente):
+    def eliminar(self, identificador):
+        id_cliente = self._convertir_id(identificador)
+        with self.session_factory() as sesion:
+            cliente = self._buscar(sesion, id_cliente)
+            pedidos = sesion.execute(
+                select(func.count(Pedido.id)).where(Pedido.cliente_id == id_cliente)
+            ).scalar_one()
+            if pedidos:
+                raise ValueError("No se puede eliminar: el cliente tiene pedidos registrados.")
+            sesion.delete(cliente)
+            sesion.commit()
+
+    @staticmethod
+    def _buscar(sesion, id_cliente):
+        cliente = sesion.get(Cliente, id_cliente)
+        if cliente is None:
+            raise ValueError(f"No existe un cliente con el ID {id_cliente}.")
+        return cliente
+
+    @staticmethod
+    def _convertir_id(identificador):
         try:
-            self.database.run("DELETE FROM clientes WHERE id_cliente=?", (id_cliente,))
-        except sqlite3.IntegrityError as error:
-            raise ValueError("No se puede eliminar: el cliente tiene pedidos registrados.") from error
+            return int(identificador)
+        except (TypeError, ValueError) as error:
+            raise ValueError("El ID debe ser un numero entero.") from error
