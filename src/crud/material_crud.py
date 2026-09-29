@@ -11,10 +11,11 @@ class MaterialCRUD:
         return self.database.rows("SELECT id_material, nombre, tipo, cantidad, unidad, precio FROM materiales")
 
     def obtener(self, id_material):
-        return self.database.rows(
-            "SELECT nombre, tipo, cantidad, unidad, precio FROM materiales WHERE id_material = ?",
+        rows = self.database.rows(
+            "SELECT id_material, nombre, tipo, cantidad, unidad, precio FROM materiales WHERE id_material = ?",
             (id_material,),
-        )[0]
+        )
+        return rows[0] if rows else None
 
     def crear(self, nombre, tipo, cantidad, unidad, precio):
         id_material = str(uuid4())

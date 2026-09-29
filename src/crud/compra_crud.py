@@ -11,10 +11,11 @@ class CompraCRUD:
         return self.database.rows("SELECT id_compra, fecha, valor_total, estado, id_proveedor FROM compras")
 
     def obtener(self, id_compra):
-        return self.database.rows(
-            "SELECT fecha, valor_total, estado, id_proveedor FROM compras WHERE id_compra = ?",
+        rows = self.database.rows(
+            "SELECT id_compra, fecha, valor_total, estado, id_proveedor FROM compras WHERE id_compra = ?",
             (id_compra,),
-        )[0]
+        )
+        return rows[0] if rows else None
 
     def crear(self, fecha, valor_total, estado, id_proveedor):
         id_compra = str(uuid4())
