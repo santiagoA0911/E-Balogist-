@@ -11,10 +11,11 @@ class ProveedorCRUD:
         return self.database.rows("SELECT id_proveedor, nombre, tel, direccion, correo FROM proveedores")
 
     def obtener(self, id_proveedor):
-        return self.database.rows(
-            "SELECT nombre, tel, direccion, correo FROM proveedores WHERE id_proveedor = ?",
+        rows = self.database.rows(
+            "SELECT id_proveedor, nombre, tel, direccion, correo FROM proveedores WHERE id_proveedor = ?",
             (id_proveedor,),
-        )[0]
+        )
+        return rows[0] if rows else None
 
     def crear(self, nombre, tel, direccion, correo):
         id_proveedor = str(uuid4())
