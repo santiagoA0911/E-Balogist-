@@ -1,6 +1,4 @@
-import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+
 
 from api.material import material_router
 from api.compra import compra_router
