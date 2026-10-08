@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
-from api.schemas import ProveedorCreate, ProveedorList, ProveedorRead, ProveedorUpdate, proveedorPost, proveedorPut
+from schemas.schemas import ProveedorCreate, ProveedorList, ProveedorRead, ProveedorUpdate, proveedorPost, proveedorPut
 from crud.database import Database
 from crud.proveedor_crud import ProveedorCRUD
 
