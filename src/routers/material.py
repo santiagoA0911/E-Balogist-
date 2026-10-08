@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
-from api.schemas import MaterialCreate, MaterialList, MaterialRead, MaterialUpdate, materialPost, materialPut
+from schemas.schemas import MaterialCreate, MaterialList, MaterialRead, MaterialUpdate, materialPost, materialPut
 from crud.database import Database
 from crud.material_crud import MaterialCRUD
 
