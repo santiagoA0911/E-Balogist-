@@ -1,11 +1,17 @@
-class Transporte:
-    def __init__(self, id_transporte: int, fecha: str, origen: str, destino: str, tipo_transporte: str, estado: str):
-        self.id_transporte = id_transporte
-        self.fecha = fecha
-        self.origen = origen
-        self.destino = destino
-        self.tipo_transporte = tipo_transporte
-        self.estado = estado
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+from src.database.connection import AuditModel
 
-    def __str__(self):
-        return f"Transporte(ID: {self.id_transporte}, Origen: {self.origen}, Destino: {self.destino}, Estado: {self.estado})"
+class Transporte(AuditModel):
+    __tablename__ = "transportes"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    origen = Column(String(100), nullable=False)
+    destino = Column(String(100), nullable=False)
+    estado = Column(String(50), default="En espera")
+    produccion_id = Column(Integer, ForeignKey("producciones.id"), nullable=True)
+
+    produccion = relationship("Produccion")
+
+    def __repr__(self):
+        return f"Transporte(ID: {self.id}, Origen: {self.origen}, Destino: {self.destino})"
