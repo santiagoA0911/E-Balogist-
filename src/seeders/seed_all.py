@@ -3,6 +3,7 @@ from src.entities.empleado import Empleado
 from src.entities.produccion import Produccion
 from src.entities.transporte import Transporte
 from src.entities.instalacion import Instalacion
+from src.entities.usuario import Usuario
 from src.seeders import seed_clientes, seed_detalles_pedido, seed_pedidos, seed_productos
 
 def sembrar_entidades_base(db):
