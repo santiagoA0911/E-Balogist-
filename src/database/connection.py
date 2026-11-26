@@ -15,7 +15,12 @@ if not DATABASE_URL:
     raise ValueError("La variable DATABASE_URL no está configurada en el archivo .env")
 
 # Crear el motor de conexión a Neon PostgreSQL
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,   # descarta conexiones muertas (Neon se suspende si no se usa)
+    pool_recycle=300,
+    connect_args={"connect_timeout": 15},
+)
 
 # Generador de sesiones
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

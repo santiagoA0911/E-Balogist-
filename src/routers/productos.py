@@ -14,12 +14,12 @@ from src.schemas.producto import (
 )
 
 
-router = APIRouter()
+productos_router = APIRouter()
 
 producto_crud = ProductoCRUD()
 
 
-@router.get("/productos", response_model=list[ProductoResponse])
+@productos_router.get("/productos", response_model=list[ProductoResponse])
 def listar_productos():
     productos = producto_crud.listar()
 
@@ -35,7 +35,7 @@ def listar_productos():
     ]
 
 
-@router.get("/productos/{id}", response_model=ProductoResponse)
+@productos_router.get("/productos/{id}", response_model=ProductoResponse)
 def obtener_producto(id: int):
     try:
         producto = producto_crud.obtener(id)
@@ -54,7 +54,7 @@ def obtener_producto(id: int):
     )
 
 
-@router.post(
+@productos_router.post(
     "/productos",
     response_model=ProductoResponse,
     status_code=HTTP_201_CREATED,
@@ -82,7 +82,7 @@ def crear_producto(producto: ProductoCreate):
     )
 
 
-@router.put(
+@productos_router.put(
     "/productos/{id}",
     response_model=ProductoResponse,
     status_code=HTTP_200_OK,
@@ -117,7 +117,7 @@ def actualizar_producto(id: int, producto: ProductoUpdate):
     )
 
 
-@router.delete(
+@productos_router.delete(
     "/productos/{id}",
     status_code=HTTP_200_OK,
     responses={

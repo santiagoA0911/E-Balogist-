@@ -14,12 +14,12 @@ from src.schemas.cliente import (
 )
 
 
-router = APIRouter()
+clientes_router = APIRouter()
 
 cliente_crud = ClienteCRUD()
 
 
-@router.get("/clientes", response_model=list[ClienteResponse])
+@clientes_router.get("/clientes", response_model=list[ClienteResponse])
 def listar_clientes():
     clientes = cliente_crud.listar()
 
@@ -36,7 +36,7 @@ def listar_clientes():
     ]
 
 
-@router.get("/clientes/{id}", response_model=ClienteResponse)
+@clientes_router.get("/clientes/{id}", response_model=ClienteResponse)
 def obtener_cliente(id: int):
     try:
         cliente = cliente_crud.obtener(id)
@@ -56,7 +56,7 @@ def obtener_cliente(id: int):
     )
 
 
-@router.post(
+@clientes_router.post(
     "/clientes",
     response_model=ClienteResponse,
     status_code=HTTP_201_CREATED,
@@ -86,7 +86,7 @@ def crear_cliente(cliente: ClienteCreate):
     )
 
 
-@router.put(
+@clientes_router.put(
     "/clientes/{id}",
     response_model=ClienteResponse,
     status_code=HTTP_200_OK,
@@ -115,7 +115,7 @@ def actualizar_cliente(id: int, cliente: ClienteUpdate):
         correo=cliente.correo,
         direccion=cliente.direccion,
     )
-@router.delete(
+@clientes_router.delete(
     "/clientes/{id}",
     status_code=HTTP_200_OK,
     responses={

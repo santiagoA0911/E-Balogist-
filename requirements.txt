@@ -5,3 +5,4 @@ SQLAlchemy==2.0.37
 typing_extensions==4.16.0
 fastapi==0.115.8
 uvicorn==0.34.0
+pydantic==2.10.9

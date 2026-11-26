@@ -14,12 +14,12 @@ from src.schemas.detalle_pedido import (
 )
 
 
-router = APIRouter()
+detalles_pedido_router = APIRouter()
 
 detalle_pedido_crud = DetallePedidoCRUD()
 
 
-@router.get(
+@detalles_pedido_router.get(
     "/detalles-pedido/{pedido_id}",
     response_model=list[DetallePedidoResponse],
 )
@@ -39,7 +39,7 @@ def listar_detalles_pedido(pedido_id: int):
 ]
 
 
-@router.get(
+@detalles_pedido_router.get(
     "/detalles-pedido/item/{id}",
     response_model=DetallePedidoResponse,
 )
@@ -67,7 +67,7 @@ def obtener_detalle_pedido(id: int):
     )
 
 
-@router.post(
+@detalles_pedido_router.post(
     "/detalles-pedido",
     response_model=DetallePedidoResponse,
     status_code=HTTP_201_CREATED,
@@ -102,7 +102,7 @@ def crear_detalle_pedido(detalle: DetallePedidoCreate):
     )
 
 
-@router.put(
+@detalles_pedido_router.put(
     "/detalles-pedido/{id}",
     response_model=DetallePedidoResponse,
     status_code=HTTP_200_OK,
@@ -139,7 +139,7 @@ def actualizar_detalle_pedido(
     )
 
 
-@router.delete(
+@detalles_pedido_router.delete(
     "/detalles-pedido/{id}",
     status_code=HTTP_200_OK,
     responses={

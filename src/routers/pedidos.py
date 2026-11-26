@@ -14,12 +14,12 @@ from src.schemas.pedido import (
 )
 
 
-router = APIRouter()
+pedido_router = APIRouter()
 
 pedido_crud = PedidoCRUD()
 
 
-@router.get("/pedidos", response_model=list[PedidoResponse])
+@pedido_router.get("/pedidos", response_model=list[PedidoResponse])
 def listar_pedidos():
     pedidos = pedido_crud.listar()
 
@@ -37,7 +37,7 @@ def listar_pedidos():
     ]
 
 
-@router.get("/pedidos/{id}", response_model=PedidoResponse)
+@pedido_router.get("/pedidos/{id}", response_model=PedidoResponse)
 def obtener_pedido(id: int):
     try:
         pedido = pedido_crud.obtener(id)
@@ -58,7 +58,7 @@ def obtener_pedido(id: int):
     )
 
 
-@router.post(
+@pedido_router.post(
     "/pedidos",
     response_model=PedidoResponse,
     status_code=HTTP_201_CREATED,
@@ -91,7 +91,7 @@ def crear_pedido(pedido: PedidoCreate):
     )
 
 
-@router.put(
+@pedido_router.put(
     "/pedidos/{id}",
     response_model=PedidoResponse,
     status_code=HTTP_200_OK,
@@ -132,7 +132,7 @@ def actualizar_pedido(id: int, pedido: PedidoUpdate):
     )
 
 
-@router.delete(
+@pedido_router.delete(
     "/pedidos/{id}",
     status_code=HTTP_200_OK,
     responses={
